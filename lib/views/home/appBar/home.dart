@@ -10,6 +10,8 @@ import '../../../utils/api.dart' show GetTypeList, GetCurNavData;
 import '../../../schema/nav-info-schema.dart';
 // tools
 import '../../../utils/tools.dart' show setContainerHight;
+// config
+import '../../../utils/config.dart' show hostUrl;
 
 class Home extends StatefulWidget {
   Map args;
@@ -76,40 +78,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     // return Text('data');
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: <Widget>[
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  // 跳转到搜索
-                  print('跳转到搜索');
-                  // SearchBar();
-                  showSearch(context: context, delegate: SearchBar());
-                },
-                child: Container(
-                  height: 30,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white60,
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: 5),
-              child: IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {
-                  // 跳转到搜索
-                  print('跳转到搜索');
-                  // SearchBar();
-                  showSearch(context: context, delegate: SearchBar());
-                },
-              ),
-            )
-          ],
+        title: Container(
+          height: 30,
+          decoration: BoxDecoration(
+            color: Colors.white60,
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+          ),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              // 跳转到搜索
+              print('跳转到搜索');
+              // SearchBar();
+              showSearch(context: context, delegate: SearchBar());
+            },
+          ),
+        ],
         bottom: TabBar(
           tabs: _tabData.map((e) => Tab(text: e['name'])).toList(),
           isScrollable: true,
@@ -133,7 +119,8 @@ class HomeBody extends StatefulWidget {
   _HomeBodyState createState() => _HomeBodyState(_path);
 }
 
-class _HomeBodyState extends State<HomeBody> {
+class _HomeBodyState extends State<HomeBody>
+    with AutomaticKeepAliveClientMixin {
   // 当前页的objectID
   String _path;
   // 是否开启轮播图
@@ -201,6 +188,9 @@ class _HomeBodyState extends State<HomeBody> {
             ),
           );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 // ------
@@ -214,7 +204,8 @@ class SwiperCard extends StatefulWidget {
   _SwiperCardState createState() => _SwiperCardState(_data);
 }
 
-class _SwiperCardState extends State<SwiperCard> {
+class _SwiperCardState extends State<SwiperCard>
+    with AutomaticKeepAliveClientMixin {
   List _data = <NavInfoSchemaValueSwiperList>[];
   _SwiperCardState(this._data);
 
@@ -225,9 +216,13 @@ class _SwiperCardState extends State<SwiperCard> {
             height: 160,
             child: new Swiper(
               itemBuilder: (BuildContext context, int index) {
+                String curPoster = _data[index].poster;
+                String resultImg = curPoster.startsWith('http')
+                    ? curPoster
+                    : hostUrl + curPoster;
                 return new Image.network(
-                  _data[index].poster,
-                  fit: BoxFit.fill,
+                  resultImg,
+                  fit: BoxFit.cover,
                   height: 160,
                 );
               },
@@ -243,6 +238,9 @@ class _SwiperCardState extends State<SwiperCard> {
           )
         : Container();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 // 一组卡片，分为标题和list数据
@@ -254,7 +252,8 @@ class CardGroup extends StatefulWidget {
   _CardGroupState createState() => _CardGroupState(_items);
 }
 
-class _CardGroupState extends State<CardGroup> {
+class _CardGroupState extends State<CardGroup>
+    with AutomaticKeepAliveClientMixin {
   List _items = <NavInfoSchemaValueTabList>[];
   _CardGroupState(this._items);
 
@@ -353,4 +352,7 @@ class _CardGroupState extends State<CardGroup> {
   Widget build(BuildContext context) {
     return Column(children: _buildWidget());
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

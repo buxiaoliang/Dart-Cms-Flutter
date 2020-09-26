@@ -25,7 +25,8 @@ class VideoType extends StatefulWidget {
   _VideoTypeState createState() => _VideoTypeState(args: args);
 }
 
-class _VideoTypeState extends State<VideoType> {
+class _VideoTypeState extends State<VideoType>
+    with AutomaticKeepAliveClientMixin {
   Map args;
   // is init ?
   bool isInit = false;
@@ -363,4 +364,7 @@ class _VideoTypeState extends State<VideoType> {
             ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -56,7 +56,8 @@ class soResult extends StatefulWidget {
   _soResultState createState() => _soResultState(query);
 }
 
-class _soResultState extends State<soResult> {
+class _soResultState extends State<soResult>
+    with AutomaticKeepAliveClientMixin {
   String query;
   bool isInit = false;
   bool lock = false;
@@ -267,4 +268,7 @@ class _soResultState extends State<soResult> {
             child: CircularProgressIndicator(),
           );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

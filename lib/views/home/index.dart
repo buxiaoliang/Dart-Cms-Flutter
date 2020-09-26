@@ -21,7 +21,7 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState(args: args);
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   DateTime lastPopTime;
   Map args;
   BuildContext topContext;
@@ -109,4 +109,7 @@ class _HomeState extends State<Home> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

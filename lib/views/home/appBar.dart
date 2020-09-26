@@ -13,7 +13,9 @@ class HomeAppBar extends StatefulWidget {
   _HomeAppBarState createState() => _HomeAppBarState();
 }
 
-class _HomeAppBarState extends State<HomeAppBar> {
+class _HomeAppBarState extends State<HomeAppBar>
+    with AutomaticKeepAliveClientMixin {
+  PageController _pageController = PageController(initialPage: 0);
   // 当前tab下标
   int _curTabIndex = 0;
 
@@ -22,13 +24,6 @@ class _HomeAppBarState extends State<HomeAppBar> {
     BottomNavigationBarItem(icon: Icon(Icons.bookmark), title: Text('文章')),
     BottomNavigationBarItem(icon: Icon(Icons.view_list), title: Text('分类')),
     BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('我的')),
-  ];
-
-  List TabBodys = <Widget>[
-    Home(),
-    ArticleType(),
-    VideoType(),
-    User(),
   ];
 
   @override
@@ -41,12 +36,27 @@ class _HomeAppBarState extends State<HomeAppBar> {
         fixedColor: Theme.of(context).accentColor,
         type: BottomNavigationBarType.fixed,
         onTap: (int index) {
+          //跳转到指定页面
+          _pageController.jumpToPage(index);
+          // 改index
           this.setState(() {
             _curTabIndex = index;
           });
         },
       ),
-      body: TabBodys[_curTabIndex],
+      body: PageView(
+        controller: _pageController,
+        physics: NeverScrollableScrollPhysics(),
+        children: <Widget>[
+          Home(),
+          ArticleType(),
+          VideoType(),
+          User(),
+        ],
+      ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

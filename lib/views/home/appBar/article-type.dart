@@ -15,7 +15,8 @@ class ArticleType extends StatefulWidget {
   _ArticleTypeState createState() => _ArticleTypeState(args: args);
 }
 
-class _ArticleTypeState extends State<ArticleType> {
+class _ArticleTypeState extends State<ArticleType>
+    with AutomaticKeepAliveClientMixin {
   Map args;
   // refresh
   RefreshController _refreshController =
@@ -183,4 +184,7 @@ class _ArticleTypeState extends State<ArticleType> {
             ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
