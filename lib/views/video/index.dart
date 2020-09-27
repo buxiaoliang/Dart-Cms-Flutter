@@ -5,6 +5,8 @@ import 'dart:convert' as convert;
 import 'package:video_player/video_player.dart';
 import 'package:share_extend/share_extend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// shemie customControls
+import '../../module/CustomControls.dart' show MaterialControls;
 // config
 import '../../utils/config.dart' show appName, hostUrl;
 // utils
@@ -58,6 +60,8 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
   bool isError = false;
   // player url
   String url;
+  // cur playing the video list name
+  String videoName;
   // widget uniqueKey
   UniqueKey uniqueKey = UniqueKey();
   _VideoState({@required this.args}) {
@@ -198,6 +202,13 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
             : "";
         this.setState(() {
           this.url = url;
+          this.videoName = detillInfo.videoTitle +
+              ' ' +
+              (url.isNotEmpty
+                  ? sourceList[playFocus["row_id"]]
+                      .list[playFocus["col_id"]]
+                      .split('\$')[0]
+                  : '');
           this.isInit = true;
           // 屏幕常亮
           Wakelock.enable();
@@ -408,15 +419,15 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
               playFocus["row_id"] = row_id;
               playFocus["col_id"] = index;
             });
-
+            // 拆源 - 播放源 名称
+            String curPlayBtnName = playList[index].split('\$')[0];
             // 拆源 - 播放源 url
             String url = playList[index].split('\$')[1];
             this.setState(() {
               this.uniqueKey = UniqueKey();
+              this.videoName = detillInfo.videoTitle + ' ' + curPlayBtnName;
               this.url = url;
             });
-            // 拆源 - 播放源 名称
-            String curPlayBtnName = playList[index].split('\$')[0];
             // 设置历史
             _setHistory(playFocus, curPlayBtnName);
           },
@@ -706,9 +717,9 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
       body: Column(
         children: <Widget>[
           isInit
-              ? ChewiePlayer(this.url, this.uniqueKey)
+              ? ChewiePlayer(this.url, this.videoName, this.uniqueKey)
               : Container(
-                  height: 250,
+                  height: 205,
                   child: Center(
                     child: !isError
                         ? CircularProgressIndicator()
@@ -842,20 +853,22 @@ class _LikeMovieCardState extends State<LikeMovieCard> {
 // 播放器
 class ChewiePlayer extends StatefulWidget {
   final String url;
+  final String videoName;
   final UniqueKey newKey;
-  ChewiePlayer(this.url, this.newKey) : super(key: newKey);
+  ChewiePlayer(this.url, this.videoName, this.newKey) : super(key: newKey);
 
   @override
-  _ChewiePlayerState createState() => _ChewiePlayerState(url);
+  _ChewiePlayerState createState() => _ChewiePlayerState(url, videoName);
 }
 
 class _ChewiePlayerState extends State<ChewiePlayer> {
   final String url;
+  final String videoName;
   // video player
   VideoPlayerController videoPlayerController;
   // chewie
   ChewieController chewieController;
-  _ChewiePlayerState(this.url);
+  _ChewiePlayerState(this.url, this.videoName);
 
   void _initData() {
     this.setState(() {
@@ -863,10 +876,12 @@ class _ChewiePlayerState extends State<ChewiePlayer> {
       videoPlayerController = VideoPlayerController.network(url);
       // 如果change说明，切换集
       chewieController = ChewieController(
+        customControls: MaterialControls(videoName),
+        allowedScreenSleep: false,
         videoPlayerController: videoPlayerController,
-        aspectRatio: 3 / 2, //宽高比
+        aspectRatio: 16 / 9, //宽高比
         autoPlay: true, //自动播放
-        looping: true, //循环播放
+        looping: false, //循环播放
       );
     });
   }

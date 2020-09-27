@@ -4,6 +4,8 @@
 ## 免责申明
 > 本项目仅供学习参考，请勿用于任何商业、非法用途。由此带来的法律责任，本人概不承担！
 
+## chewie播放修改，参考这位大佬
+[链接地址](https://www.jianshu.com/p/a9105d748533) ,首先他说的文件位置并不对，应该是给ChewieController传递参数MaterialControls，然后MaterialControls里面则是需要修改的东西，也就是大佬的修改内容。关于食品标题，你需要自己想办法传递进去。树是死的，人是活的。自己想办法。
 
 ## 预览
 <p align="center">
