@@ -75,14 +75,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // return Text('data');
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          height: 30,
-          decoration: BoxDecoration(
-            color: Colors.white60,
-            borderRadius: BorderRadius.all(Radius.circular(15)),
+        title: GestureDetector(
+          onTap: () {
+            // 跳转到搜索
+            print('跳转到搜索');
+            // SearchBar();
+            showSearch(context: context, delegate: SearchBar());
+          },
+          child: Container(
+            height: 30,
+            decoration: BoxDecoration(
+              color: Colors.white60,
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+            ),
           ),
         ),
         actions: <Widget>[
@@ -215,6 +222,7 @@ class _SwiperCardState extends State<SwiperCard>
         ? Container(
             height: 160,
             child: new Swiper(
+              autoplay: true,
               itemBuilder: (BuildContext context, int index) {
                 String curPoster = _data[index].poster;
                 String resultImg = curPoster.startsWith('http')

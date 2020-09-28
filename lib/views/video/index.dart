@@ -5,7 +5,7 @@ import 'dart:convert' as convert;
 import 'package:video_player/video_player.dart';
 import 'package:share_extend/share_extend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// shemie customControls
+// chewie customControls
 import '../../module/CustomControls.dart' show MaterialControls;
 // config
 import '../../utils/config.dart' show appName, hostUrl;

@@ -5,7 +5,7 @@
 > 本项目仅供学习参考，请勿用于任何商业、非法用途。由此带来的法律责任，本人概不承担！
 
 ## chewie播放修改，参考这位大佬
-[链接地址](https://www.jianshu.com/p/a9105d748533) ,首先他说的文件位置并不对，应该是给ChewieController传递参数MaterialControls，然后MaterialControls里面则是需要修改的东西，也就是大佬的修改内容。关于食品标题，你需要自己想办法传递进去。树是死的，人是活的。自己想办法。
+[链接地址](https://www.jianshu.com/p/a9105d748533) ,首先他说的文件位置并不对，应该是给ChewieController传递参数MaterialControls，然后MaterialControls里面则是需要修改的东西，也就是大佬的修改内容。关于视频标题，你需要自己想办法传递进去。树是死的，人是活的。自己想办法。
 
 ## 预览
 <p align="center">
@@ -13,6 +13,7 @@
     <img width="380" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/dart-cms-flutter-2.png" />
     <img width="380" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/dart-cms-flutter-3.png" />
     <img width="380" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/dart-cms-flutter-4.png" />
+    <img src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/dart-cms-flutter-5.png" />
 </p>
 
 ## Dart-Cms-Manage（后台）
@@ -27,6 +28,10 @@
 ## 项目结构
 
 ``` bash
+├─module                     // 对依赖包的修改都放到这里
+│   │
+│   └──CustomControls.dart  // chewie播放器自定义ui
+│
 ├─components                 // 公共的一些组件
 │
 ├─schema                     // json解析类，模型

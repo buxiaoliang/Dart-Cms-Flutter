@@ -132,20 +132,18 @@ class _ArticleTypeState extends State<ArticleType>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: <Widget>[
-            Expanded(child: Container(child: Text('文章分类'))),
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                // 跳转到搜索
-                print('跳转到搜索');
-                // SearchBar();
-                showSearch(context: context, delegate: SearchBar());
-              },
-            )
-          ],
-        ),
+        title: Text('文章分类'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              // 跳转到搜索
+              print('跳转到搜索');
+              // SearchBar();
+              showSearch(context: context, delegate: SearchBar());
+            },
+          )
+        ],
       ),
       body: isInit
           ? SmartRefresher(
