@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
-BuildContext curContext;
-
 void showLoading(
   BuildContext topContext,
 ) {
   showDialog(
     context: topContext,
     builder: (context) {
-      curContext = context;
       return WillPopScope(
         child: Dialog(
           insetPadding: EdgeInsets.symmetric(horizontal: 115.0),
@@ -61,6 +58,6 @@ void showLoading(
   );
 }
 
-void hideLoading() {
-  Navigator.of(curContext).pop();
+void hideLoading(BuildContext context) {
+  Navigator.of(context).pop();
 }

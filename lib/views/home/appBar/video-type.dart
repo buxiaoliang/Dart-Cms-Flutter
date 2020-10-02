@@ -133,7 +133,7 @@ class _VideoTypeState extends State<VideoType>
           // 刷新数据
           Loading.showLoading(context);
           await _pullData();
-          Loading.hideLoading();
+          Loading.hideLoading(context);
         },
         child: Text(
           item.name,

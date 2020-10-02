@@ -209,7 +209,9 @@ class _soResultState extends State<soResult>
   }
 
   void _onLoading() async {
-    page++;
+    this.setState(() {
+      page++;
+    });
     await _pullData(refresh: false);
     _refreshController.loadComplete();
   }

@@ -54,15 +54,16 @@ Future<void> getVideoDetail(
         args["playFocus"] = history;
       }
       // router push
-      Loading.hideLoading();
+      Loading.hideLoading(context);
       if (isPop) {
         Navigator.of(context).pop();
       }
+
       Navigator.pushNamed(context, '/video', arguments: args);
     },
     vid,
     error: (msg) {
-      Loading.hideLoading();
+      Loading.hideLoading(context);
     },
   );
   // hide loading
