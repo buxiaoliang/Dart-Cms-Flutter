@@ -39,43 +39,45 @@ class _ArticleState extends State<Article> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('文章详情'),
-      ),
-      body: isInit
-          ? RefreshIndicator(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Column(
-                    children: <Widget>[
-                      // 标题
-                      Container(
-                        child: Text(
-                          artInfo.articleTitle,
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                      // 类型,时间
-                      Row(
+        appBar: AppBar(
+          title: Text('文章详情'),
+        ),
+        body: MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: isInit
+              ? RefreshIndicator(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Column(
                         children: <Widget>[
-                          Text('类型：${artInfo.articleType}'),
-                          Text(' / '),
-                          Text('时间：${artInfo.updateTime}')
+                          // 标题
+                          Container(
+                            child: Text(
+                              artInfo.articleTitle,
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                          // 类型,时间
+                          Row(
+                            children: <Widget>[
+                              Text('类型：${artInfo.articleType}'),
+                              Text(' / '),
+                              Text('时间：${artInfo.updateTime}')
+                            ],
+                          ),
+                          // 正文
+                          Html(data: artInfo.content)
                         ],
                       ),
-                      // 正文
-                      Html(data: artInfo.content)
-                    ],
+                    ),
                   ),
+                  onRefresh: _pullData,
+                )
+              : Center(
+                  child: CircularProgressIndicator(),
                 ),
-              ),
-              onRefresh: _pullData,
-            )
-          : Center(
-              child: CircularProgressIndicator(),
-            ),
-    );
+        ));
   }
 }

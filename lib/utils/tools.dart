@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+// utils loading
+import '../utils/loading.dart' as Loading;
+// api
+import '../utils/api.dart' show GetCurVideoDetill;
+// schema
+import '../components/publicMovieGroup.dart' show VideoSchema;
 
 // ToastGravity => 位置映射
 Map<String, ToastGravity> ToastAlign = {
@@ -25,16 +31,40 @@ Future<bool> publicToast(
       fontSize: 16.0);
 }
 
-// 动态计算GridView父级的高度
-double setContainerHight(
-    {@required List arr,
-    int lenH = 240,
-    int limit = 3,
-    bool isMax = false,
-    int maxLen = 6}) {
-  // int len = !isMax ? arr.length : (arr.length > maxLen) ? maxLen : arr.length;
-  int len = !isMax || (isMax && arr.length < maxLen) ? arr.length : maxLen;
-  double lineFloor = len / 3;
-  int lineNum = lineFloor.ceil();
-  return (lineNum * lenH).toDouble();
+// 公共的打开视频方法
+Future<void> getVideoDetail(
+  BuildContext context,
+  String vid,
+  bool isPop, {
+  Map history,
+}) async {
+  // loading
+  Loading.showLoading(context);
+  // ajax
+  await GetCurVideoDetill(
+    (resData) {
+      // query schema
+      Map<String, dynamic> args = {
+        'detillInfo': resData.value.videoInfo,
+        'mealList': resData.value.mealList,
+        'likeList': resData.value.list.likeMovie,
+        'sourceList': resData.value.source,
+      };
+      if (history != null) {
+        args["playFocus"] = history;
+      }
+      // router push
+      Loading.hideLoading();
+      if (isPop) {
+        Navigator.of(context).pop();
+      }
+      Navigator.pushNamed(context, '/video', arguments: args);
+    },
+    vid,
+    error: (msg) {
+      Loading.hideLoading();
+    },
+  );
+  // hide loading
+  // Loading.hideLoading();
 }

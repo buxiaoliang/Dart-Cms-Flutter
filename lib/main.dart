@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import './router.dart' show onGenerateRoute;
 
 void main() {

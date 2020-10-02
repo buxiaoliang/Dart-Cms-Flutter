@@ -16,6 +16,8 @@ import '../../../utils/tools.dart' show publicToast;
 import '../../../components/publicDialog.dart' show createPubDialog, launchUrl;
 // api
 import '../../../utils/api.dart' show AppAuthUpgrade;
+// 公共获取视频数据方法
+import '../../../utils/tools.dart' show getVideoDetail;
 
 class User extends StatefulWidget {
   Map args;
@@ -155,22 +157,19 @@ class _UserState extends State<User> {
       return Padding(
         padding: EdgeInsets.only(left: 3, right: 3, bottom: 5, top: 7),
         child: GestureDetector(
-          onTap: () {
-            // map转class
-            NavInfoSchemaValueTabListList curData =
-                NavInfoSchemaValueTabListList.fromJson(item);
+          onTap: () async {
             // 播放历史，行，列。多少集
             Map<String, int> playFocus = {
               "row_id": item["row_id"],
               "col_id": item["col_id"],
             };
-            // query schema
-            Map args = <String, dynamic>{
-              'schema': curData,
-              'playFocus': playFocus,
-            };
-            // 再打开当前页
-            Navigator.pushNamed(context, '/video', arguments: args);
+            // 获取视频数据，
+            await getVideoDetail(
+              context,
+              item["_id"],
+              false,
+              history: playFocus,
+            );
           },
           child: Column(
             children: <Widget>[

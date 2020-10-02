@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert' as convert;
 import 'package:shared_preferences/shared_preferences.dart';
-// schema
-import '../../schema/nav-info-schema.dart' show NavInfoSchemaValueTabListList;
 // utils
-import '../../utils/tools.dart' show publicToast;
+import '../../utils/tools.dart' show publicToast, getVideoDetail;
 
 class History extends StatefulWidget {
   Map args;
@@ -68,28 +66,25 @@ class _HistoryState extends State<History> {
     _getHistoryData();
   }
 
-  List<Widget> _buildHisChild() {
+  List<Widget> _buildHisChild(BuildContext context) {
     return hisList.map((item) {
       return Padding(
         padding: EdgeInsets.only(left: 8, right: 8),
         child: FlatButton(
           padding: EdgeInsets.only(top: 4, bottom: 4),
-          onPressed: () {
-            // map转class
-            NavInfoSchemaValueTabListList curData =
-                NavInfoSchemaValueTabListList.fromJson(item);
+          onPressed: () async {
             // 播放历史，行，列。多少集
             Map<String, int> playFocus = {
               "row_id": item["row_id"],
               "col_id": item["col_id"],
             };
-            // query schema
-            Map args = <String, dynamic>{
-              'schema': curData,
-              'playFocus': playFocus,
-            };
-            // 再打开当前页
-            Navigator.pushNamed(context, '/video', arguments: args);
+            // 获取视频数据，
+            await getVideoDetail(
+              context,
+              item["_id"],
+              false,
+              history: playFocus,
+            );
           },
           child: Container(
             decoration: BoxDecoration(
@@ -184,7 +179,7 @@ class _HistoryState extends State<History> {
         ],
       ),
       body: ListView(
-        children: _buildHisChild(),
+        children: _buildHisChild(context),
       ),
     );
   }

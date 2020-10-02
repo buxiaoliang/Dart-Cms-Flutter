@@ -4,12 +4,13 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:transparent_image/transparent_image.dart';
 // conponents
 import '../../../components/searchBar.dart';
+import '../../../components/publicMovieGroup.dart' show layoutGroupMovieCard;
 // api
 import '../../../utils/api.dart' show GetTypeList, GetCurNavData;
 // schema
 import '../../../schema/nav-info-schema.dart';
 // tools
-import '../../../utils/tools.dart' show setContainerHight;
+import '../../../utils/tools.dart' show getVideoDetail;
 // config
 import '../../../utils/config.dart' show hostUrl;
 
@@ -35,7 +36,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     _tabController = new TabController(vsync: this, length: 0);
     _tabController.addListener(() {
       setState(() => _index = _tabController.index);
-      print("点击tabBar下标-> ${_tabController.indexIsChanging}");
     });
     var This = this;
     GetTypeList(
@@ -234,11 +234,9 @@ class _SwiperCardState extends State<SwiperCard>
                   height: 160,
                 );
               },
-              onTap: (index) {
-                // query schema
-                Map args = <String, dynamic>{'schema': _data[index]};
-                // router push
-                Navigator.pushNamed(context, '/video', arguments: args);
+              onTap: (index) async {
+                // 获取视频数据，
+                await getVideoDetail(context, _data[index].Id, false);
               },
               itemCount: _data.length,
               pagination: new SwiperPagination(),
@@ -265,86 +263,16 @@ class _CardGroupState extends State<CardGroup>
   List _items = <NavInfoSchemaValueTabList>[];
   _CardGroupState(this._items);
 
-  List<Widget> _buildWidget() {
+  List<Widget> _buildWidget(BuildContext context) {
     List _cardList = <Widget>[];
     _cardList = _items.map((curItem) {
+      // layout布局
       return curItem.list.length > 0
-          ? Padding(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    height: 40,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Icon(Icons.videocam),
-                        SizedBox(width: 3),
-                        Text(
-                          // 板块标题
-                          curItem.name,
-                          style: TextStyle(fontSize: 20),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    height: setContainerHight(
-                      arr: curItem.list,
-                      isMax: true,
-                      maxLen: 6,
-                    ),
-                    child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 0.485,
-                          mainAxisSpacing: 5,
-                          crossAxisSpacing: 5,
-                        ),
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount:
-                            curItem.list.length >= 6 ? 6 : curItem.list.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return GestureDetector(
-                            onTap: () {
-                              // query schema
-                              Map args =
-                                  <String, NavInfoSchemaValueTabListList>{
-                                'schema': curItem.list[index]
-                              };
-                              // router push
-                              Navigator.pushNamed(context, '/video',
-                                  arguments: args);
-                            },
-                            child: Column(
-                              children: <Widget>[
-                                Container(
-                                  height: 200,
-                                  child: FadeInImage(
-                                    placeholder: AssetImage('images/lazy.gif'),
-                                    image: NetworkImage(
-                                        curItem.list[index].videoImage),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Container(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    curItem.list[index].videoTitle,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    textAlign: TextAlign.left,
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        }),
-                  )
-                ],
-              ),
+          ? layoutGroupMovieCard(
+              topList: curItem.list,
+              context: context,
+              title: curItem.name,
+              rowItemNum: 3,
             )
           : Container();
     }).toList();
@@ -358,7 +286,7 @@ class _CardGroupState extends State<CardGroup>
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: _buildWidget());
+    return Column(children: _buildWidget(context));
   }
 
   @override

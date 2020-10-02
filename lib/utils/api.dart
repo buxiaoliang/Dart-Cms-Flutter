@@ -10,7 +10,7 @@ import '../schema/article-ditell-schema.dart' show ArticleDitellSchema;
 import '../schema/other-schema.dart' show AppInitNoticeCon, AppAuthUpgradeInfo;
 
 // 获取首页所有的导航（视频导航）
-void GetTypeList(Function cb) async {
+Future<void> GetTypeList(Function cb) async {
   var result = null;
   await HttpUtil.get('/app/getTypeList', success: (data) {
     result = TypeListSchema.fromJson(data);
@@ -19,7 +19,7 @@ void GetTypeList(Function cb) async {
 }
 
 // 获取当前视频导航的数据
-void GetCurNavData(Function cb, String nid) async {
+Future<void> GetCurNavData(Function cb, String nid) async {
   var result = null;
   await HttpUtil.get('/app/getCurNavItemList/${nid}', success: (data) {
     result = NavInfoSchema.fromJson(data);
@@ -28,7 +28,8 @@ void GetCurNavData(Function cb, String nid) async {
 }
 
 // 获取当前视频的 详细信息、播放列表
-void GetCurVideoDetill(Function cb, String vid, {Function error}) async {
+Future<void> GetCurVideoDetill(Function cb, String vid,
+    {Function error}) async {
   var result = null;
   await HttpUtil.get(
     '/app/getDetillData/${vid}',
@@ -41,7 +42,7 @@ void GetCurVideoDetill(Function cb, String vid, {Function error}) async {
 }
 
 // 获取各种详细分类，以及分类下的数据
-void GetTypesDatas(Function cb, String params) async {
+Future<void> GetTypesDatas(Function cb, String params) async {
   var result = null;
   await HttpUtil.get('/app/getTypesDatas?${params}', success: (data) {
     result = AllTypesDatas.fromJson(data);
@@ -50,7 +51,7 @@ void GetTypesDatas(Function cb, String params) async {
 }
 
 // 获取所有的文章
-void GetAllArtItems(Function cb, int page) async {
+Future<void> GetAllArtItems(Function cb, int page) async {
   var result = null;
   await HttpUtil.get('/app/getAllArtItemList', data: {'page': page},
       success: (data) {
@@ -60,7 +61,8 @@ void GetAllArtItems(Function cb, int page) async {
 }
 
 // 文章详细信息
-void GetCurArtDetill(Function cb, String paramID, {Function error}) async {
+Future<void> GetCurArtDetill(Function cb, String paramID,
+    {Function error}) async {
   var result = null;
   await HttpUtil.get('/app/getArtDetill/${paramID}', error: error,
       success: (data) {
@@ -70,7 +72,7 @@ void GetCurArtDetill(Function cb, String paramID, {Function error}) async {
 }
 
 // 获取视频搜索结果
-void GetVideoSearch(Function cb, String query, int page) async {
+Future<void> GetVideoSearch(Function cb, String query, int page) async {
   var result = null;
   await HttpUtil.get('/app/getSearchDatas',
       data: {'name': query, 'page': page.toString()}, success: (data) {
@@ -80,7 +82,7 @@ void GetVideoSearch(Function cb, String query, int page) async {
 }
 
 // app检测升级
-void AppAuthUpgrade(Function cb, String appKey) async {
+Future<void> AppAuthUpgrade(Function cb, String appKey) async {
   var result = null;
   await HttpUtil.get('/app/appAuthUpgrade', data: {'appKey': appKey},
       success: (data) {
@@ -90,7 +92,7 @@ void AppAuthUpgrade(Function cb, String appKey) async {
 }
 
 // app初始化公告
-void AppInitTipsInfo(Function cb) async {
+Future<void> AppInitTipsInfo(Function cb) async {
   var result = null;
   await HttpUtil.get('/app/appInitTipsInfo', success: (data) {
     result = AppInitNoticeCon.fromJson(data);

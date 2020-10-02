@@ -6,6 +6,8 @@ import '../schema/video-search-schema.dart';
 import '../utils/api.dart' show GetVideoSearch;
 // schema
 import '../schema/video-search-schema.dart';
+// utils
+import '../utils/tools.dart' show getVideoDetail;
 
 class SearchBar extends SearchDelegate<String> {
   //复写点击搜索框右侧图标方法,此方法也就是点击右侧图标的回调函数,点击右侧图标把搜索内容情空
@@ -71,7 +73,6 @@ class _soResultState extends State<soResult>
   List<VideoSearchResultValueSearchResultList> resultList = [];
 
   @override
-  @override
   void initState() {
     super.initState();
     _pullData();
@@ -81,11 +82,9 @@ class _soResultState extends State<soResult>
   List<Widget> _bulderItems(BuildContext context) {
     return resultList.map((cursor) {
       return GestureDetector(
-        onTap: () {
-          // query schema
-          Map args = <String, dynamic>{'schema': cursor};
-          // router push
-          Navigator.pushNamed(context, '/video', arguments: args);
+        onTap: () async {
+          // 获取视频数据，
+          await getVideoDetail(context, cursor.Id, false);
         },
         child: Padding(
           padding: EdgeInsets.only(bottom: 8),
@@ -102,72 +101,73 @@ class _soResultState extends State<soResult>
                 ),
               ),
               SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    child: Text(
-                      cursor.videoTitle,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      child: Text(
+                        cursor.videoTitle,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    child: Row(
-                      children: <Widget>[
-                        Text('类型： '),
-                        Text(cursor.videoType.name),
-                      ],
+                    SizedBox(height: 6),
+                    Container(
+                      child: Row(
+                        children: <Widget>[
+                          Text('类型： '),
+                          Text(cursor.videoType.name),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    child: Row(
-                      children: <Widget>[
-                        Text('年代： '),
-                        Text(cursor.relTime),
-                      ],
+                    SizedBox(height: 6),
+                    Container(
+                      child: Row(
+                        children: <Widget>[
+                          Text('年代： '),
+                          Text(cursor.relTime),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    child: Row(
-                      children: <Widget>[
-                        Text('语言： '),
-                        Text(cursor.language),
-                      ],
+                    SizedBox(height: 6),
+                    Container(
+                      child: Row(
+                        children: <Widget>[
+                          Text('语言： '),
+                          Text(cursor.language),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    child: Row(
-                      children: <Widget>[
-                        Text('地区： '),
-                        Text(cursor.subRegion),
-                      ],
+                    SizedBox(height: 6),
+                    Container(
+                      child: Row(
+                        children: <Widget>[
+                          Text('地区： '),
+                          Text(cursor.subRegion),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  RaisedButton(
-                    onPressed: () {
-                      // query schema
-                      Map args = {'schema': cursor};
-                      // router push
-                      Navigator.pushNamed(context, '/video', arguments: args);
-                    },
-                    color: Theme.of(context).accentColor,
-                    textColor: Colors.white,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    child: Text('点击播放'),
-                  )
-                ],
+                    SizedBox(height: 6),
+                    RaisedButton(
+                      elevation: 0,
+                      onPressed: () async {
+                        // 获取视频数据，
+                        await getVideoDetail(context, cursor.Id, false);
+                      },
+                      color: Theme.of(context).accentColor,
+                      textColor: Colors.white,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      child: Text('点击播放'),
+                    )
+                  ],
+                ),
               )
             ],
           ),
@@ -176,50 +176,34 @@ class _soResultState extends State<soResult>
     }).toList();
   }
 
-  Widget _createBody(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Container(
-        color: Colors.white,
-        child: Padding(
-          padding: EdgeInsets.only(left: 8, right: 8, top: 8),
-          child: Column(
-            children: _bulderItems(context),
-          ),
-        ),
-      ),
-    );
-  }
-
   // ajax pull result
   Future<void> _pullData({bool refresh = true}) async {
-    GetVideoSearch((data) {
-      int curPage = data.value.searchResult.page;
-      int maxPage = (data.value.searchResult.total / 10).ceil();
-      // 如果当前页是最后一页，锁定上滑加载
-      if (curPage >= maxPage) {
-        this.setState(() {
-          lock = true;
-        });
-      }
-      page = data.value.searchResult.page;
-      // is refresh
-      if (!refresh) {
-        List<VideoSearchResultValueSearchResultList> newResultList =
-            data.value.searchResult.list;
-        resultList.addAll(newResultList);
-      } else {
-        this.setState(() {
-          resultList = data.value.searchResult.list;
-        });
-      }
+    await GetVideoSearch((data) {
       this.setState(() {
+        int curPage = data.value.searchResult.page;
+        int maxPage = (data.value.searchResult.total / 10).ceil();
+        // 如果当前页是最后一页，锁定上滑加载
+        if (curPage >= maxPage) {
+          _refreshController.loadNoData();
+        }
+        page = data.value.searchResult.page;
+        // is refresh
+        if (!refresh) {
+          List<VideoSearchResultValueSearchResultList> newResultList =
+              data.value.searchResult.list;
+          resultList.addAll(newResultList);
+        } else {
+          resultList = data.value.searchResult.list;
+        }
         isInit = true;
       });
     }, query, page);
   }
 
   void _onRefresh() async {
+    this.setState(() {
+      page = 1;
+    });
     await _pullData();
     _refreshController.refreshCompleted();
   }
@@ -240,18 +224,25 @@ class _soResultState extends State<soResult>
             footer: CustomFooter(
               builder: (BuildContext context, LoadStatus mode) {
                 Widget body;
-                if (lock) {
-                  body = Text("没有更多数据了!");
-                } else {
-                  if (mode == LoadStatus.idle) {
-                    body = Text("上拉加载");
-                  } else if (mode == LoadStatus.loading) {
-                    body = CircularProgressIndicator();
-                  } else if (mode == LoadStatus.failed) {
-                    body = Text("加载失败！点击重试！");
-                  } else if (mode == LoadStatus.canLoading) {
-                    body = Text("松手,加载更多!");
-                  }
+                if (mode == LoadStatus.idle) {
+                  body = Text("上拉加载");
+                } else if (mode == LoadStatus.loading) {
+                  body = Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: CircularProgressIndicator(),
+                      ),
+                      SizedBox(width: 20),
+                      Text('内容加载中'),
+                    ],
+                  );
+                } else if (mode == LoadStatus.failed) {
+                  body = Text("加载失败！点击重试！");
+                } else if (mode == LoadStatus.canLoading) {
+                  body = Text("松手,加载更多!");
                 }
                 return Container(
                   height: 55.0,
@@ -262,7 +253,18 @@ class _soResultState extends State<soResult>
             controller: _refreshController,
             onRefresh: _onRefresh,
             onLoading: _onLoading,
-            child: _createBody(context),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                color: Colors.white,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 8, right: 8, top: 8),
+                  child: Column(
+                    children: _bulderItems(context),
+                  ),
+                ),
+              ),
+            ),
           )
         : Center(
             child: CircularProgressIndicator(),

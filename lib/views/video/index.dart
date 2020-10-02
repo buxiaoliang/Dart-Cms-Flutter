@@ -10,8 +10,7 @@ import '../../module/CustomControls.dart' show MaterialControls;
 // config
 import '../../utils/config.dart' show appName, hostUrl;
 // utils
-import '../../utils/tools.dart' show setContainerHight, publicToast;
-import '../../components/publicDialog.dart' show launchUrl;
+import '../../utils/tools.dart' show publicToast;
 // api
 import '../../utils/api.dart' show GetCurVideoDetill;
 // schema
@@ -23,6 +22,7 @@ import '../../schema/video-detill-schema.dart'
         CurVideoDetillValueSource;
 // components
 import '../../components/publicMeal.dart' show createMealList;
+import '../../components/publicMovieGroup.dart' show layoutGroupMovieCard;
 
 // 存下根组件context
 BuildContext curContext;
@@ -30,7 +30,7 @@ BuildContext curContext;
 // 首页 - 路由
 class Video extends StatefulWidget {
   // schema
-  Map args;
+  Map<String, dynamic> args;
   Video({Key key, @required this.args}) : super(key: key);
 
   @override
@@ -39,7 +39,7 @@ class Video extends StatefulWidget {
 
 class _VideoState extends State<Video> with TickerProviderStateMixin {
   // schema
-  Map args;
+  Map<String, dynamic> args;
   bool isInit = false;
   // detill data
   CurVideoDetillValueVideoInfo detillInfo;
@@ -65,33 +65,82 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
   // widget uniqueKey
   UniqueKey uniqueKey = UniqueKey();
   _VideoState({@required this.args}) {
-    if (args["playFocus"] != null) {
-      // this.setState(() {
-      this.playFocus = args["playFocus"];
-      // });
+    Map<String, dynamic> arg = new Map<String, dynamic>.from(args);
+    // this.setState(() {
+    if (arg["playFocus"] != null) {
+      this.playFocus = arg["playFocus"];
     }
+    // video info
+    this.detillInfo = arg["detillInfo"];
+    // meal list
+    this.mealList = arg["mealList"];
+    // like list
+    this.likeList = arg["likeList"];
+    // source list
+    this.sourceList = arg["sourceList"];
+    // });
+  }
+
+  void _initData() {
+    // 播放源
+    String url = sourceList.length > 0 &&
+            sourceList[playFocus["row_id"]] != null &&
+            sourceList[playFocus["row_id"]].list[playFocus["col_id"]] != null
+        ? sourceList[playFocus["row_id"]]
+            .list[playFocus["col_id"]]
+            .split('\$')[1]
+        : "";
+    this.setState(() {
+      this.tabController = TabController(
+        length: 2,
+        vsync: this,
+      );
+      this.url = url;
+      this.videoName = detillInfo.videoTitle +
+          ' ' +
+          (url.isNotEmpty
+              ? sourceList[playFocus["row_id"]]
+                  .list[playFocus["col_id"]]
+                  .split('\$')[0]
+              : '');
+    });
+    // 当前播放焦点名称
+    String curPlayBtnName = this.url.isNotEmpty
+        ? this
+            .sourceList[playFocus["row_id"]]
+            .list[playFocus["col_id"]]
+            .split('\$')[0]
+        : "";
+    // 设置历史
+    _setHistory(playFocus, curPlayBtnName);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
   }
 
   Map<String, dynamic> formantObject(
       Map<String, int> playFocus, String curPlayBtnName) {
     return {
-      "_id": args["schema"].Id,
-      "videoTitle": args["schema"].videoTitle,
-      "director": args["schema"].director,
-      "poster": args["schema"].performer,
-      "videoImage": args["schema"].videoImage,
+      "_id": detillInfo.Id,
+      "videoTitle": detillInfo.videoTitle,
+      "director": detillInfo.director,
+      "poster": detillInfo.performer,
+      "videoImage": detillInfo.videoImage,
       "video_type": detillInfo.videoType.name,
-      "video_rate": args["schema"].videoRate,
-      "update_time": args["schema"].updateTime,
-      "language": args["schema"].language,
-      "sub_region": args["schema"].subRegion,
-      "rel_time": args["schema"].relTime,
-      "introduce": args["schema"].introduce,
-      "remind_tip": args["schema"].remindTip,
-      "popular": args["schema"].popular,
-      "allow_reply": args["schema"].allowReply,
-      "display": args["schema"].display,
-      "scource_sort": args["schema"].scourceSort,
+      "video_rate": detillInfo.videoRate,
+      "update_time": detillInfo.updateTime,
+      "language": detillInfo.language,
+      "sub_region": detillInfo.subRegion,
+      "rel_time": detillInfo.relTime,
+      "introduce": detillInfo.introduce,
+      "remind_tip": detillInfo.remindTip,
+      "popular": detillInfo.popular,
+      "allow_reply": detillInfo.allowReply,
+      "display": detillInfo.display,
+      "scource_sort": detillInfo.scourceSort,
       // player cur index
       "row_id": playFocus["row_id"],
       "col_id": playFocus["col_id"],
@@ -121,7 +170,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
     }
 
     // 插入一条新的
-    String newKey = args["schema"].Id;
+    String newKey = detillInfo.Id;
     // 当前的id是否已经存在
     if (hisKeys.contains(newKey)) {
       // 存在就删除，重新插入，变化位置，插入到最前
@@ -168,81 +217,10 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // init tabBar
-    tabController = TabController(
-      length: 2,
-      vsync: this,
-    );
-    // ajax
-    GetCurVideoDetill(
-      (data) {
-        if (mounted) {
-          this.setState(() {
-            // video info
-            detillInfo = data.value.videoInfo;
-            // meal list
-            mealList = data.value.mealList;
-            // like list
-            likeList = data.value.list.likeMovie;
-            // source list
-            sourceList = data.value.source;
-          });
-          print(likeList.length);
-        }
-        // 播放源
-        String url = sourceList.length > 0 &&
-                sourceList[playFocus["row_id"]] != null &&
-                sourceList[playFocus["row_id"]].list[playFocus["col_id"]] !=
-                    null
-            ? sourceList[playFocus["row_id"]]
-                .list[playFocus["col_id"]]
-                .split('\$')[1]
-            : "";
-        this.setState(() {
-          this.url = url;
-          this.videoName = detillInfo.videoTitle +
-              ' ' +
-              (url.isNotEmpty
-                  ? sourceList[playFocus["row_id"]]
-                      .list[playFocus["col_id"]]
-                      .split('\$')[0]
-                  : '');
-          this.isInit = true;
-          // 屏幕常亮
-          Wakelock.enable();
-        });
-        // 当前播放焦点名称
-        String curPlayBtnName = url.isNotEmpty
-            ? sourceList[playFocus["row_id"]]
-                .list[playFocus["col_id"]]
-                .split('\$')[0]
-            : "";
-        // 设置历史
-        _setHistory(playFocus, curPlayBtnName);
-      },
-      args['schema'].Id,
-      error: (String msg) {
-        if (mounted) {
-          this.setState(() {
-            isError = true;
-          });
-        }
-      },
-    );
-  }
-
-  @override
   void dispose() {
     Wakelock.disable();
     tabController.dispose();
     super.dispose();
-  }
-
-  // 切换到留言
-  void _changeMessage() {
-    publicToast('暂未开发');
   }
 
   // 加入本地收藏
@@ -311,7 +289,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                   child: Padding(
                     padding: EdgeInsets.all(8),
                     child: Text(
-                      args['schema'].videoTitle,
+                      detillInfo.videoTitle,
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
@@ -339,7 +317,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                         Row(
                           children: <Widget>[
                             Text(
-                              '导演： ${args['schema'].director.isEmpty ? "暂无" : args['schema'].director}',
+                              '导演： ${detillInfo.director.isEmpty ? "暂无" : detillInfo.director}',
                               style: TextStyle(color: Colors.black87),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -356,9 +334,8 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                             Expanded(
                               child: SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
-                                  child: Text(args['schema'].performer != null
-                                      ? args['schema']
-                                          .performer
+                                  child: Text(detillInfo.performer != null
+                                      ? detillInfo.performer
                                           .split(',')
                                           .join('  ')
                                       : "暂无")),
@@ -382,7 +359,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                         SizedBox(height: 8),
                         Container(
                           child: Text(
-                            args['schema'].introduce,
+                            detillInfo.introduce,
                             style: TextStyle(color: Colors.black54),
                           ),
                         )
@@ -546,7 +523,20 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
         // 源列表
         Container(
           child: Column(
-            children: sourceList.length > 0 ? _createPlayBox() : [],
+            children: sourceList.length > 0
+                ? _createPlayBox()
+                : [
+                    Divider(height: 1),
+                    Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Center(
+                        child: Text(
+                          '暂无播放源',
+                          style: TextStyle(fontSize: 18, color: Colors.red),
+                        ),
+                      ),
+                    )
+                  ],
           ),
         ),
       ],
@@ -564,26 +554,35 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
         child: Row(
           children: <Widget>[
             // 发布时间
-            _getTextTip(
-                args['schema'].relTime.isEmpty ? '暂无' : args['schema'].relTime),
+            _getTextTip(detillInfo.relTime.isEmpty ? '暂无' : detillInfo.relTime),
             _getTextTip(' | '),
             // 分类
             _getTextTip(detillInfo?.videoType?.name ?? '暂无'),
             _getTextTip(' | '),
             // 评分
-            _getTextTip(args['schema'].videoRate.toString() + ' 分'),
+            _getTextTip(detillInfo.videoRate.toString() + ' 分'),
             _getTextTip(' | '),
             // 语言
-            _getTextTip(args['schema'].language.isEmpty
-                ? '暂无'
-                : args['schema'].language),
+            _getTextTip(
+                detillInfo.language.isEmpty ? '暂无' : detillInfo.language),
             _getTextTip(' | '),
             // 发布地区
-            _getTextTip(args['schema'].subRegion.isEmpty
-                ? '暂无'
-                : args['schema'].subRegion),
+            _getTextTip(
+                detillInfo.subRegion.isEmpty ? '暂无' : detillInfo.subRegion),
           ],
         ),
+      ),
+    );
+  }
+
+  // 下半部 推荐视频
+  Widget _createVideoLike() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: layoutGroupMovieCard(
+        context: curContext,
+        topList: this.likeList,
+        isPop: true,
       ),
     );
   }
@@ -609,7 +608,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                     Expanded(
                       flex: 1,
                       child: Text(
-                        args['schema'].videoTitle,
+                        detillInfo.videoTitle,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 20.0),
                       ),
@@ -641,11 +640,6 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   _buildInkWellButton(
-                    icon: Icons.message,
-                    callBack: _changeMessage,
-                    tagName: "评价",
-                  ),
-                  _buildInkWellButton(
                     icon: Icons.star,
                     callBack: _joinLikeList,
                     tagName: "收藏",
@@ -664,7 +658,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
           _getCurPlayList(),
           SizedBox(height: 5),
           // 推荐视频
-          LikeMovieCard(likeList, UniqueKey()),
+          // LikeMovieCard(likeList, UniqueKey()),
           SizedBox(height: 5),
         ],
       ),
@@ -688,8 +682,8 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
             title: Center(
               child: TabBar(
                 tabs: <Widget>[
-                  Tab(text: '视频'),
-                  Tab(text: '评价'),
+                  Tab(text: '视频信息'),
+                  Tab(text: '推荐视频'),
                 ],
                 isScrollable: true,
                 controller: tabController,
@@ -703,7 +697,7 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
             // tab1 video info
             _createVideoInfo(),
             // tab2 video message
-            _createVideoMsg(),
+            _createVideoLike(),
           ],
         ),
       ),
@@ -716,133 +710,12 @@ class _VideoState extends State<Video> with TickerProviderStateMixin {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          isInit
-              ? ChewiePlayer(this.url, this.videoName, this.uniqueKey)
-              : Container(
-                  height: 205,
-                  child: Center(
-                    child: !isError
-                        ? CircularProgressIndicator()
-                        : Text(
-                            '加载失败',
-                            style: TextStyle(color: Colors.red, fontSize: 20),
-                          ),
-                  ),
-                ),
+          // 播放器
+          ChewiePlayer(this.url, this.videoName, this.uniqueKey),
+          // 描述信息
           Expanded(
             flex: 1,
             child: _createVideo(),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-// 推荐视频卡片
-class LikeMovieCard extends StatefulWidget {
-  List<CurVideoDetillValueListLikeMovie> likeList = [];
-  final UniqueKey newKey;
-  LikeMovieCard(this.likeList, this.newKey) : super(key: newKey);
-
-  @override
-  _LikeMovieCardState createState() => _LikeMovieCardState(likeList);
-}
-
-class _LikeMovieCardState extends State<LikeMovieCard> {
-  List<CurVideoDetillValueListLikeMovie> likeList = [];
-  _LikeMovieCardState(this.likeList);
-
-  GridView _createLikeItem() {
-    return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.49,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-        ),
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: likeList.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {
-              // query schema
-              Map args = <String, dynamic>{'schema': likeList[index]};
-              // 先关掉当前页
-              Navigator.pop(curContext);
-              // 再打开当前页
-              Navigator.pushNamed(curContext, '/video', arguments: args);
-            },
-            child: Column(
-              children: <Widget>[
-                Container(
-                  height: 200,
-                  child: FadeInImage(
-                    placeholder: AssetImage('images/lazy.gif'),
-                    image: NetworkImage(likeList[index].videoImage),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  child: Text(
-                    likeList[index].videoTitle,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    textAlign: TextAlign.left,
-                  ),
-                )
-              ],
-            ),
-          );
-        });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: <Widget>[
-          Container(
-            height: 50,
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: EdgeInsets.only(left: 10, right: 10),
-              child: Text(
-                '相关视频',
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-          Divider(height: 1),
-          Column(
-            children: <Widget>[
-              Container(
-                child: Padding(
-                  padding: EdgeInsets.all(7),
-                  child: likeList.length > 0
-                      ? Container(
-                          height: setContainerHight(arr: likeList), // 每行230高度
-                          child: _createLikeItem(),
-                        )
-                      : Container(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 30, bottom: 30),
-                            child: Center(
-                              child: Text(
-                                '暂无关联视频',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                ),
-              )
-            ],
           )
         ],
       ),
@@ -903,33 +776,6 @@ class _ChewiePlayerState extends State<ChewiePlayer> {
   Widget build(BuildContext context) {
     return Chewie(
       controller: chewieController,
-    );
-  }
-}
-
-// 留言
-class _createVideoMsg extends StatefulWidget {
-  _createVideoMsg({Key key}) : super(key: key);
-
-  @override
-  __createVideoMsgState createState() => __createVideoMsgState();
-}
-
-class __createVideoMsgState extends State<_createVideoMsg> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(top: 150, bottom: 150),
-          child: Center(
-            child: Text(
-              '暂未开发',
-              style: TextStyle(color: Colors.red, fontSize: 20),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

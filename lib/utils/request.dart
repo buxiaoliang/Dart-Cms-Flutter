@@ -9,7 +9,7 @@ class BaseUrl {
 }
 
 class HttpUtil {
-  static void get(String url,
+  static Future<void> get(String url,
       {Map<String, dynamic> data,
       Map<String, dynamic> headers = const {'Content-Type': 'application/json'},
       Map<String, bool> toast = const {'success': false, 'error': true},
@@ -31,7 +31,7 @@ class HttpUtil {
         headers: headers, toast: toast, error: error);
   }
 
-  static void post(String url,
+  static Future<void> post(String url,
       {Map<String, dynamic> data,
       Map<String, dynamic> headers,
       Function success,

@@ -5,10 +5,11 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../schema/all-type-schema.dart';
 // api
 import '../../../utils/api.dart' show GetTypesDatas;
-// tools
-import '../../../utils/tools.dart' show setContainerHight;
 // components
-import 'package:flutter_app/components/searchBar.dart' show SearchBar;
+import '../../../components/searchBar.dart' show SearchBar;
+import '../../../components/publicMovieGroup.dart' show layoutGroupMovieCard;
+// utils
+import '../../../utils/loading.dart' as Loading;
 
 // formantJson
 class SortFrom {
@@ -40,7 +41,6 @@ class _VideoTypeState extends State<VideoType>
     'page': '1',
     'sort': '_id'
   };
-  bool lock = false;
   List<SortFrom> sortList = [
     SortFrom(Id: '_id', name: '时间'),
     SortFrom(Id: 'rate', name: '人气'),
@@ -65,7 +65,7 @@ class _VideoTypeState extends State<VideoType>
     return cache.join('&');
   }
 
-  void _pullData({bool refresh = true}) async {
+  Future<void> _pullData({bool refresh = true}) async {
     await GetTypesDatas((data) {
       this.setState(() {
         // if (mounted) {
@@ -74,7 +74,7 @@ class _VideoTypeState extends State<VideoType>
         params['page'] = curPage.toString();
         // 如果当前页是最后一页，锁定上滑加载
         if (curPage >= maxPage) {
-          lock = true;
+          _refreshController.loadNoData();
         }
         allTypeItem = data.value.allTypeItem;
         // 是否重置列表
@@ -85,9 +85,6 @@ class _VideoTypeState extends State<VideoType>
           List<AllTypesDatasValueCurQueryListList> newQueryList =
               data.value.curQueryList.list;
           curQueryList.addAll(newQueryList);
-          // if (newQueryList.length == 0) {
-          //   lock = true;
-          // }
         }
         isInit = true;
         // }
@@ -95,21 +92,18 @@ class _VideoTypeState extends State<VideoType>
     }, _getParams());
   }
 
-  void _onRefresh() async {
-    // monitor network fetch
+  Future<void> _onRefresh() async {
+    this.setState(() {
+      params['page'] = '1';
+    });
     await _pullData();
-    // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
   }
 
-  void _onLoading() async {
-    // monitor network fetch
-
+  Future<void> _onLoading() async {
     int page = int.parse(params['page']);
     params['page'] = (++page).toString();
-    // print(params['page']);
     await _pullData(refresh: false);
-    // if failed,use refreshFailed()
     _refreshController.loadComplete();
   }
 
@@ -117,59 +111,6 @@ class _VideoTypeState extends State<VideoType>
   void initState() {
     super.initState();
     _pullData();
-  }
-
-  // 生成视频列表
-  Widget _createGridVideo() {
-    return Container(
-      height: setContainerHight(arr: curQueryList),
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.5,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-        ),
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: curQueryList.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {},
-            child: GestureDetector(
-              onTap: () {
-                // query schema
-                Map args = <String, AllTypesDatasValueCurQueryListList>{
-                  'schema': curQueryList[index]
-                };
-                // router push
-                Navigator.pushNamed(context, '/video', arguments: args);
-              },
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    height: 200,
-                    child: FadeInImage(
-                      placeholder: AssetImage('images/lazy.gif'),
-                      image: NetworkImage(curQueryList[index].videoImage),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      curQueryList[index].videoTitle,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      textAlign: TextAlign.left,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 
   // 生成分类行中的各种细分类按钮
@@ -190,7 +131,9 @@ class _VideoTypeState extends State<VideoType>
           // 设置params的各项参数，并且刷新
           params[paramKey] = item.Id;
           // 刷新数据
+          Loading.showLoading(context);
           await _pullData();
+          Loading.hideLoading();
         },
         child: Text(
           item.name,
@@ -325,18 +268,25 @@ class _VideoTypeState extends State<VideoType>
               footer: CustomFooter(
                 builder: (BuildContext context, LoadStatus mode) {
                   Widget body;
-                  if (lock) {
-                    body = Text("没有更多数据了!");
-                  } else {
-                    if (mode == LoadStatus.idle) {
-                      body = Text("上拉加载");
-                    } else if (mode == LoadStatus.loading) {
-                      body = CircularProgressIndicator();
-                    } else if (mode == LoadStatus.failed) {
-                      body = Text("加载失败！点击重试！");
-                    } else if (mode == LoadStatus.canLoading) {
-                      body = Text("松手,加载更多!");
-                    }
+                  if (mode == LoadStatus.idle) {
+                    body = Text("上拉加载");
+                  } else if (mode == LoadStatus.loading) {
+                    body = Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: CircularProgressIndicator(),
+                        ),
+                        SizedBox(width: 20),
+                        Text('内容加载中'),
+                      ],
+                    );
+                  } else if (mode == LoadStatus.failed) {
+                    body = Text("加载失败！点击重试！");
+                  } else if (mode == LoadStatus.canLoading) {
+                    body = Text("松手,加载更多!");
                   }
                   return Container(
                     height: 55.0,
@@ -347,14 +297,21 @@ class _VideoTypeState extends State<VideoType>
               controller: _refreshController,
               onRefresh: _onRefresh,
               onLoading: _onLoading,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: <Widget>[
-                    _createTypesBox(),
-                    _createGridVideo(),
-                  ],
-                ),
+              child: ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  switch (index) {
+                    case 0:
+                      return _createTypesBox();
+
+                    case 1:
+                      return layoutGroupMovieCard(
+                        topList: curQueryList,
+                        context: context,
+                      );
+                  }
+                },
+                // itemExtent: 100.0,
+                itemCount: 2,
               ),
             )
           : Center(

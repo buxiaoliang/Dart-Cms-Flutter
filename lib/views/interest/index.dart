@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert' as convert;
 import 'package:shared_preferences/shared_preferences.dart';
-// schema
-import '../../schema/nav-info-schema.dart' show NavInfoSchemaValueTabListList;
 // utils
-import '../../utils/tools.dart' show publicToast;
+import '../../utils/tools.dart' show publicToast, getVideoDetail;
 
 class Interest extends StatefulWidget {
   Map args;
@@ -42,7 +40,7 @@ class _InterestState extends State<Interest> {
     // prefs.remove('interest');
 
     this.setState(() {
-      interestList = starDataList;
+      interestList = starDataList.reversed.toList();
     });
   }
 
@@ -60,14 +58,13 @@ class _InterestState extends State<Interest> {
         padding: EdgeInsets.only(left: 8, right: 8),
         child: FlatButton(
           padding: EdgeInsets.only(top: 4, bottom: 4),
-          onPressed: () {
-            // map转class
-            NavInfoSchemaValueTabListList curData =
-                NavInfoSchemaValueTabListList.fromJson(item);
-            // query schema
-            Map args = <String, dynamic>{'schema': curData};
-            // 再打开当前页
-            Navigator.pushNamed(context, '/video', arguments: args);
+          onPressed: () async {
+            // 获取视频数据，
+            await getVideoDetail(
+              context,
+              item["_id"],
+              false,
+            );
           },
           child: Container(
             decoration: BoxDecoration(
