@@ -42,6 +42,8 @@
 │   │
 │   ├──cache.dart           // 关于app缓存的
 │   │
+│   ├──loading.dart         // loading封装
+│   │
 │   ├──config.dart          // 配置，请求地址，app名称，uniqueKey等
 │   │
 │   ├──request.dart         // dio的封装，网络请求
