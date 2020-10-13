@@ -77,32 +77,46 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {
-            // 跳转到搜索
-            print('跳转到搜索');
-            // SearchBar();
-            showSearch(context: context, delegate: SearchBar());
-          },
-          child: Container(
-            height: 30,
-            decoration: BoxDecoration(
-              color: Colors.white60,
-              borderRadius: BorderRadius.all(Radius.circular(15)),
+        title: Row(
+          children: <Widget>[
+            // 搜索框
+            Expanded(
+              flex: 1,
+              child: GestureDetector(
+                onTap: () {
+                  // 跳转到搜索
+                  print('跳转到搜索');
+                  // SearchBar();
+                  showSearch(context: context, delegate: SearchBar());
+                },
+                child: Container(
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.white60,
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                ),
+              ),
             ),
-          ),
+            SizedBox(width: 10),
+            // 搜索按钮
+            Ink(
+              child: InkWell(
+                borderRadius: new BorderRadius.circular(18),
+                onTap: () {
+                  // 跳转到搜索
+                  print('跳转到搜索');
+                  // SearchBar();
+                  showSearch(context: context, delegate: SearchBar());
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Icon(Icons.search),
+                ),
+              ),
+            ),
+          ],
         ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              // 跳转到搜索
-              print('跳转到搜索');
-              // SearchBar();
-              showSearch(context: context, delegate: SearchBar());
-            },
-          ),
-        ],
         bottom: TabBar(
           tabs: _tabData.map((e) => Tab(text: e['name'])).toList(),
           isScrollable: true,

@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:chewie/chewie.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:wakelock/wakelock.dart';
 import 'dart:convert' as convert;
-import 'package:video_player/video_player.dart';
 import 'package:share_extend/share_extend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// chewie customControls
-import '../../module/CustomControls.dart' show MaterialControls;
+import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 // config
 import '../../utils/config.dart' show appName, hostUrl;
 // utils
 import '../../utils/tools.dart' show publicToast;
-// api
-import '../../utils/api.dart' show GetCurVideoDetill;
 // schema
 import '../../schema/video-detill-schema.dart'
     show
@@ -737,45 +733,39 @@ class ChewiePlayer extends StatefulWidget {
 class _ChewiePlayerState extends State<ChewiePlayer> {
   final String url;
   final String videoName;
-  // video player
-  VideoPlayerController videoPlayerController;
-  // chewie
-  ChewieController chewieController;
+  IjkMediaController controller;
   _ChewiePlayerState(this.url, this.videoName);
 
-  void _initData() {
-    this.setState(() {
-      //配置视频地址
-      videoPlayerController = VideoPlayerController.network(url);
-      // 如果change说明，切换集
-      chewieController = ChewieController(
-        customControls: MaterialControls(videoName),
-        allowedScreenSleep: false,
-        videoPlayerController: videoPlayerController,
-        aspectRatio: 16 / 9, //宽高比
-        autoPlay: true, //自动播放
-        looping: false, //循环播放
+  _initState() {
+    controller = IjkMediaController();
+    controller
+      ..setDataSource(
+        DataSource.network(url),
+        autoPlay: true,
       );
-    });
+    Wakelock.enable();
   }
 
   @override
   void initState() {
     super.initState();
-    _initData();
+    _initState();
   }
 
   @override
   void dispose() {
-    videoPlayerController.dispose();
-    chewieController.dispose();
+    Wakelock.disable();
+    controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Chewie(
-      controller: chewieController,
+    return Container(
+      height: 240,
+      child: IjkPlayer(
+        mediaController: controller,
+      ),
     );
   }
 }
